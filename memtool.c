@@ -70,7 +70,8 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base)
  * 0x1000        -> start = 0x1000, size = ~0
  * 1M+1k         -> start = 0x100000, size = 0x400
  */
-int parse_area_spec(const char *str, unsigned long long *start, unsigned long long *size)
+int parse_area_spec(const char *str, unsigned long long *start,
+		    unsigned long long *size)
 {
 	char *endp;
 	loff_t end;
@@ -117,7 +118,8 @@ int parse_area_spec(const char *str, unsigned long long *start, unsigned long lo
 	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
 	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
-int memory_display(const void *addr, unsigned long long offs, unsigned nbytes, int size, int swab)
+int memory_display(const void *addr, unsigned long long offs,
+		   unsigned nbytes, int size, int swab)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -191,7 +193,8 @@ static void *memmap(const char *file, unsigned long addr, unsigned long size)
 	mmap_start = addr & ~(4095);
 	ofs = addr - mmap_start;
 
-	mem = mmap(0, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED, memfd, mmap_start);
+	mem = mmap(0, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
+		   memfd, mmap_start);
 	if (mem == MAP_FAILED) {
 		perror("mmap");
 		goto out;
@@ -336,7 +339,6 @@ struct cmd cmds[] = {
 		.cmd = mm,
 		.name = "mw",
 	},
-
 };
 
 int main(int argc, char **argv)
