@@ -349,6 +349,11 @@ int main(int argc, char **argv)
 		argc--;
 	}
 
+	if (argc < 1) {
+		fprintf(stderr, "No command given\n");
+		return EXIT_FAILURE;
+	}
+
 	for (i = 0; i < ARRAY_SIZE(cmds); i++) {
 		cmd = &cmds[i];
 		if (!strcmp(argv[0], cmd->name))
