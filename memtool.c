@@ -32,7 +32,7 @@
  * Like simple_strtoull() but handles an optional G, M, K or k
  * suffix for Gigabyte, Megabyte or Kilobyte
  */
-unsigned long long strtoull_suffix(const char *str, char **endp, int base)
+static unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 {
 	unsigned long long val;
 	char *end;
@@ -70,7 +70,7 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base)
  * 0x1000        -> start = 0x1000, size = ~0
  * 1M+1k         -> start = 0x100000, size = 0x400
  */
-int parse_area_spec(const char *str, unsigned long long *start,
+static int parse_area_spec(const char *str, unsigned long long *start,
 		    unsigned long long *size)
 {
 	char *endp;
@@ -118,7 +118,7 @@ int parse_area_spec(const char *str, unsigned long long *start,
 	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
 	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
-int memory_display(const void *addr, unsigned long long offs,
+static int memory_display(const void *addr, unsigned long long offs,
 		   unsigned nbytes, int size, int swab)
 {
 	ulong linebytes, i;
@@ -177,7 +177,8 @@ int memory_display(const void *addr, unsigned long long offs,
 
 	return 0;
 }
-int memfd;
+
+static int memfd;
 
 static void *memmap(const char *file, unsigned long addr, unsigned long size)
 {
@@ -325,7 +326,7 @@ struct cmd {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-struct cmd cmds[] = {
+static struct cmd cmds[] = {
 	{
 		.cmd = md,
 		.name = "md",
