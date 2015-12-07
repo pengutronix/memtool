@@ -29,7 +29,7 @@
 #define DISP_LINE_LEN	16
 
 /*
- * Like simple_strtoull() but handles an optional G, M, K or k
+ * Like strtoull() but handles an optional G, M, K or k
  * suffix for Gigabyte, Megabyte or Kilobyte
  */
 static unsigned long long strtoull_suffix(const char *str, char **endp, int base)
