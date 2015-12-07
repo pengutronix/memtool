@@ -208,7 +208,32 @@ out:
 	return NULL;
 }
 
-static int md(int argc, char **argv)
+static void usage_md(void)
+{
+	printf(
+"md - memory display\n"
+"\n"
+"Usage: md [-bwlsx] REGION\n"
+"\n"
+"Display (hex dump) a memory region.\n"
+"\n"
+"Options:\n"
+"  -b        byte access\n"
+"  -w        word access (16 bit)\n"
+"  -l        long access (32 bit)\n"
+"  -q        quad access (64 bit)\n"
+"  -s <FILE> display file (default /dev/mem)\n"
+"  -x        swap bytes at output\n"
+"\n"
+"Memory regions can be specified in two different forms: START+SIZE\n"
+"or START-END, If START is omitted it defaults to 0x100\n"
+"Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.\n"
+"An optional suffix of k, M or G is for kbytes, Megabytes or Gigabytes.\n"
+	);
+
+}
+
+static int cmd_memory_display(int argc, char **argv)
 {
 	int opt;
 	int width = 4;
@@ -217,7 +242,7 @@ static int md(int argc, char **argv)
 	char *file = "/dev/mem";
 	int swap = 0;
 
-	while ((opt = getopt(argc, argv, "bwls:x")) != -1) {
+	while ((opt = getopt(argc, argv, "bwls:xh")) != -1) {
 		switch (opt) {
 		case 'b':
 			width = 1;
@@ -234,6 +259,9 @@ static int md(int argc, char **argv)
 		case 'x':
 			swap = 1;
 			break;
+		case 'h':
+			usage_md();
+			return 0;
 		}
 	}
 
@@ -255,7 +283,25 @@ static int md(int argc, char **argv)
 	exit(1);
 }
 
-static int mm(int argc, char *argv[])
+static void usage_mw(void)
+{
+	printf(
+"mw - memory write\n"
+"\n"
+"Usage: mw [-bwld] REGION DATA...\n"
+"\n"
+"Write DATA value(s) to the specified REGION.\n"
+"\n"
+"Options:\n"
+"  -b        byte access\n"
+"  -w        word access (16 bit)\n"
+"  -l        long access (32 bit)\n"
+"  -q        quad access (64 bit)\n"
+"  -d <FILE> write file (default /dev/mem)\n"
+	);
+}
+
+static int cmd_memory_write(int argc, char *argv[])
 {
 	unsigned long long adr;
 	int width = 4;
@@ -263,7 +309,7 @@ static int mm(int argc, char *argv[])
 	void *mem;
 	char *file = "/dev/mem";
 
-	while ((opt = getopt(argc, argv, "bwld:")) != -1) {
+	while ((opt = getopt(argc, argv, "bwld:h")) != -1) {
 		switch (opt) {
 		case 'b':
 			width = 1;
@@ -277,6 +323,9 @@ static int mm(int argc, char *argv[])
 		case 'd':
 			file = optarg;
 			break;
+		case 'h':
+			usage_mw();
+			return 0;
 		}
 	}
 
@@ -328,19 +377,31 @@ struct cmd {
 
 static struct cmd cmds[] = {
 	{
-		.cmd = md,
+		.cmd = cmd_memory_display,
 		.name = "md",
 	}, {
-		.cmd = md,
-		.name = "d",
-	}, {
-		.cmd = mm,
-		.name = "mm",
-	}, {
-		.cmd = mm,
+		.cmd = cmd_memory_write,
 		.name = "mw",
 	},
 };
+
+static void usage(void)
+{
+	printf(
+"memtool - display and modify memory\n"
+"\n"
+"Usage: memtool <cmd> [OPTIONS]\n"
+"\n"
+"memtool is divided into subcommands. Supported commands are:\n"
+"md: memory display, Show regions of memory\n"
+"mw: memory write, write values to memory\n"
+"\n"
+"To show help for a subcommand do 'memtool <cmd> -h'\n"
+"\n"
+"memtool is a collection of tools to show (hexdump) and modify arbitrary files.\n"
+"By default /dev/mem is used to allow access to physical memory.\n"
+	);
+}
 
 int main(int argc, char **argv)
 {
@@ -354,6 +415,7 @@ int main(int argc, char **argv)
 
 	if (argc < 1) {
 		fprintf(stderr, "No command given\n");
+		usage();
 		return EXIT_FAILURE;
 	}
 
@@ -364,6 +426,8 @@ int main(int argc, char **argv)
 	}
 
 	fprintf(stderr, "No such command: %s\n", argv[0]);
+
+	usage();
 
 	exit(1);
 }
