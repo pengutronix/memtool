@@ -7,6 +7,23 @@ memtool uses git for version control. The master repository is available at
 
 . Patches can be sent to entwicklung@pengutronix.de.
 
+Build Guideline
+---------------
+
+memtool uses autotools for building. The generated files are not included
+in version control, so if you build from there you have to build these first,
+probably using
+
+	autoreconf -fi
+
+After that (or when using the source from a tar ball) the usual
+
+	./configure
+	make
+	sudo make install
+
+should build and install memtool.
+
 Patch Guideline
 ---------------
 
