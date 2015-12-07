@@ -1,0 +1,18 @@
+Source: memtool
+Section: devel
+Priority: extra
+Maintainer: Uwe Kleine-König <ukleinek@debian.org>
+Standards-Version: 3.9.6
+Homepage: http://www.pengutronix.de/software/memtool/index_en.html
+Build-Depends: debhelper (>= 9), autoconf, automake
+Build-Conflicts: autoconf2.13, automake1.4
+
+Package: memtool
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Development tool to modify memory mapped registers
+ memtool allows one to read and write memory mapped registers via /dev/mem. The
+ commands are inspired by the respective commands of the barebox bootloader.
+ This is handy during driver development to inspect and modify register
+ settings. It can also be used to modify regular files and character devices
+ (e.g. to paint to /dev/fb0).

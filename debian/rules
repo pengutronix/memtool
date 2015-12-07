@@ -1,0 +1,6 @@
+#!/usr/bin/make -f
+
+binary-indep binary-arch binary build-arch build-indep build clean install:
+	dh $@
+
+.PHONY: binary-indep binary-arch binary build-arch build-indep build clean install 

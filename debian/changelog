@@ -1,0 +1,5 @@
+memtool (2015.12.0-1) unstable; urgency=medium
+
+  * Initial release for Debian (Closes: #807315).
+
+ -- Uwe Kleine-König <ukleinek@debian.org>  Mon, 07 Dec 2015 20:45:44 +0100
