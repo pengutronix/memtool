@@ -1,6 +1,7 @@
 memtool (2015.12.1-1) UNRELEASED; urgency=medium
 
   * New upstream release which among others provides a manpage now.
+  * Add Vcs-{Browser,Git} to d/control.
 
  -- Uwe Kleine-König <ukleinek@debian.org>  Tue, 08 Dec 2015 21:31:59 +0100
 
