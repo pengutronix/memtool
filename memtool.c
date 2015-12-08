@@ -156,19 +156,19 @@ static int memory_display(const void *addr, unsigned long long offs,
 				res = (*uqp++ = *((uint64_t *)addr));
 				if (swab)
 					res = swab64(res);
-				count -= printf(" %016llx", res);
+				count -= printf(" %016" PRIx64, res);
 			} else if (size == 4) {
 				uint32_t res;
 				res = (*uip++ = *((uint *)addr));
 				if (swab)
 					res = swab32(res);
-				count -= printf(" %08x", res);
+				count -= printf(" %08" PRIx32, res);
 			} else if (size == 2) {
 				uint16_t res;
 				res = (*usp++ = *((ushort *)addr));
 				if (swab)
 					res = swab16(res);
-				count -= printf(" %04x", res);
+				count -= printf(" %04" PRIx16, res);
 			} else {
 				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
