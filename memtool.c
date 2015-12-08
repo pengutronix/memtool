@@ -108,6 +108,16 @@ static int parse_area_spec(const char *str, unsigned long long *start,
 
 	return -1;
 }
+#define swab64(x) ((uint64_t)(						\
+	(((uint64_t)(x) & (uint64_t)0x00000000000000ffUL) << 56) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000000000ff00UL) << 40) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000000000ff0000UL) << 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00000000ff000000UL) <<  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000ff00000000UL) >>  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000ff0000000000UL) >> 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00ff000000000000UL) >> 40) |	\
+	(((uint64_t)(x) & (uint64_t)0xff00000000000000UL) >> 56)))
+
 #define swab32(x) ((uint32_t)(						\
 	(((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) |		\
 	(((uint32_t)(x) & (uint32_t)0x0000ff00UL) <<  8) |		\
@@ -131,16 +141,23 @@ static int memory_display(const void *addr, unsigned long long offs,
 	 */
 	do {
 		char linebuf[DISP_LINE_LEN];
-		uint32_t *uip = (uint   *)linebuf;
-		uint16_t *usp = (ushort *)linebuf;
-		uint8_t *ucp = (u_char *)linebuf;
+		uint64_t *uqp = (uint64_t *)linebuf;
+		uint32_t *uip = (uint32_t *)linebuf;
+		uint16_t *usp = (uint16_t *)linebuf;
+		uint8_t *ucp = (uint8_t *)linebuf;
 		unsigned count = 52;
 
 		printf("%08llx:", offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
 		for (i = 0; i < linebytes; i += size) {
-			if (size == 4) {
+			if (size == 8) {
+				uint64_t res;
+				res = (*uqp++ = *((uint64_t *)addr));
+				if (swab)
+					res = swab64(res);
+				count -= printf(" %016llx", res);
+			} else if (size == 4) {
 				uint32_t res;
 				res = (*uip++ = *((uint *)addr));
 				if (swab)
@@ -213,7 +230,7 @@ static void usage_md(void)
 	printf(
 "md - memory display\n"
 "\n"
-"Usage: md [-bwlsx] REGION\n"
+"Usage: md [-bwlqsx] REGION\n"
 "\n"
 "Display (hex dump) a memory region.\n"
 "\n"
@@ -242,7 +259,7 @@ static int cmd_memory_display(int argc, char **argv)
 	char *file = "/dev/mem";
 	int swap = 0;
 
-	while ((opt = getopt(argc, argv, "bwls:xh")) != -1) {
+	while ((opt = getopt(argc, argv, "bwlqs:xh")) != -1) {
 		switch (opt) {
 		case 'b':
 			width = 1;
@@ -252,6 +269,9 @@ static int cmd_memory_display(int argc, char **argv)
 			break;
 		case 'l':
 			width = 4;
+			break;
+		case 'q':
+			width = 8;
 			break;
 		case 's':
 			file = optarg;
@@ -288,7 +308,7 @@ static void usage_mw(void)
 	printf(
 "mw - memory write\n"
 "\n"
-"Usage: mw [-bwld] OFFSET DATA...\n"
+"Usage: mw [-bwlqd] OFFSET DATA...\n"
 "\n"
 "Write DATA value(s) to the specified REGION.\n"
 "\n"
@@ -309,7 +329,7 @@ static int cmd_memory_write(int argc, char *argv[])
 	void *mem;
 	char *file = "/dev/mem";
 
-	while ((opt = getopt(argc, argv, "bwld:h")) != -1) {
+	while ((opt = getopt(argc, argv, "bwlqd:h")) != -1) {
 		switch (opt) {
 		case 'b':
 			width = 1;
@@ -319,6 +339,9 @@ static int cmd_memory_write(int argc, char *argv[])
 			break;
 		case 'l':
 			width = 4;
+			break;
+		case 'q':
+			width = 8;
 			break;
 		case 'd':
 			file = optarg;
@@ -342,24 +365,27 @@ static int cmd_memory_write(int argc, char *argv[])
 		uint8_t val8;
 		uint16_t val16;
 		uint32_t val32;
+		uint64_t val64;
 
 		switch (width) {
 		case 1:
 			val8 = strtoul(argv[optind], NULL, 0);
 			*(volatile uint8_t *)mem = val8;
-			mem += 1;
 			break;
 		case 2:
 			val16 = strtoul(argv[optind], NULL, 0);
 			*(volatile uint16_t *)mem = val16;
-			mem += 2;
 			break;
 		case 4:
 			val32 = strtoul(argv[optind], NULL, 0);
 			*(volatile uint32_t *)mem = val32;
-			mem += 4;
+			break;
+		case 8:
+			val64 = strtoull(argv[optind], NULL, 0);
+			*(volatile uint64_t *)mem = val64;
 			break;
 		}
+		mem += width;
 		optind++;
 	}
 
