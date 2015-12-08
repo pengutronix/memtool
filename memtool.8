@@ -1,0 +1,78 @@
+.TH memtool "8" "December 2015" "memtool - display and modify memory"
+.SH NAME
+memtool \- display and modify memory
+.SH SYNOPSIS
+.B memtool md
+.RB [\| \-b \||\| \-w \||\| \-l \||\| \-q \|]
+.RB [\| \-x \|]
+.RB [\| \-s
+.IR filename \|]
+.I region
+.br
+.B memtool mw
+.RB [\| \-b \||\| \-w \||\| \-l \||\| \-q \|]
+.RB [\| \-d
+.IR filename \|]
+.I start
+.I data...
+
+.SH DESCRIPTION
+memtool allows one to read and write regions of files. When applied to
+.I /dev/mem
+(which is the default file) the regions represent memory mapped registers.
+.PP
+There are currently two subcommands:
+.B mw
+to write to memory/a file; and
+.B md
+to read from memory/a file.
+
+Note that on some machines there are alignment restrictions that forbid for
+example to read a word from an address that is not word aligned. memtool
+doesn't try to be smart here but simply tries what is requested by the caller.
+This might result in all kind of errors which are not considered to be a bug of
+the tool, but either the machine or the caller.
+
+.SH OPTIONS
+.TP
+.B \-b
+Use byte wise (8-bit) access
+.TP
+.B \-w
+Use word wise (16-bit) access
+.TP
+.B \-l 
+Use long wise (32-bit) access
+.TP
+.BR \-q
+Use quad wise (64-bit) access
+.TP
+\fB\-d \fIfilename
+Write to
+.IR filename .
+.TP
+\fB\-s \fIfilename
+Read from
+.IR filename .
+.TP
+.B \-x
+Swap bytes at output
+
+.SH REGIONS
+Memory regions can be specified in two different forms:
+.TP
+\fIstart\fR[\fB+\fIsize\fR]
+.TP
+.IB start \- end
+.PP
+.I start
+specifies the byte offset of the region's beginning, i.e. the first included
+address.
+.I size
+specifies the size of the region in bytes and defaults to 0x100. Alternatively
+.I end
+specifies the offset of the last included address.
+Offsets can be specified in decimal or hexadecimal with a prefix 0x.
+Additionally you can use suffixes
+.BR G ", " M ", and " k ,
+which multiply by 1024^3, 1024^2, and 1024 respectively.
