@@ -288,7 +288,7 @@ static void usage_mw(void)
 	printf(
 "mw - memory write\n"
 "\n"
-"Usage: mw [-bwld] REGION DATA...\n"
+"Usage: mw [-bwld] OFFSET DATA...\n"
 "\n"
 "Write DATA value(s) to the specified REGION.\n"
 "\n"
