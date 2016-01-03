@@ -129,7 +129,7 @@ static int parse_area_spec(const char *str, unsigned long long *start,
 	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
 static int memory_display(const void *addr, unsigned long long offs,
-		   unsigned nbytes, int size, int swab)
+			   unsigned nbytes, int width, int swab)
 {
 	ulong linebytes, i;
 	u_char	*cp;
@@ -150,20 +150,20 @@ static int memory_display(const void *addr, unsigned long long offs,
 		printf("%08llx:", offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
-		for (i = 0; i < linebytes; i += size) {
-			if (size == 8) {
+		for (i = 0; i < linebytes; i += width) {
+			if (width == 8) {
 				uint64_t res;
 				res = (*uqp++ = *((uint64_t *)addr));
 				if (swab)
 					res = swab64(res);
 				count -= printf(" %016" PRIx64, res);
-			} else if (size == 4) {
+			} else if (width == 4) {
 				uint32_t res;
 				res = (*uip++ = *((uint *)addr));
 				if (swab)
 					res = swab32(res);
 				count -= printf(" %08" PRIx32, res);
-			} else if (size == 2) {
+			} else if (width == 2) {
 				uint16_t res;
 				res = (*usp++ = *((ushort *)addr));
 				if (swab)
@@ -172,8 +172,8 @@ static int memory_display(const void *addr, unsigned long long offs,
 			} else {
 				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
-			addr += size;
-			offs += size;
+			addr += width;
+			offs += width;
 		}
 
 		while (count--)
