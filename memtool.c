@@ -201,6 +201,10 @@ static void *memmap(const char *file, unsigned long addr, unsigned long size)
 {
 	unsigned long mmap_start, ofs;
 	void *mem;
+	long pagesize = sysconf(_SC_PAGE_SIZE);
+
+	if (pagesize < 0)
+		pagesize = 4096;
 
 	memfd = open(file, O_RDWR);
 	if (memfd < 0) {
@@ -208,7 +212,7 @@ static void *memmap(const char *file, unsigned long addr, unsigned long size)
 		exit(1);
 	}
 
-	mmap_start = addr & ~(4095);
+	mmap_start = addr & ~(pagesize - 1);
 	ofs = addr - mmap_start;
 
 	mem = mmap(0, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
