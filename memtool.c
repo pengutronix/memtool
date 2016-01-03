@@ -361,7 +361,7 @@ static int cmd_memory_write(int argc, char *argv[])
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	mem = memmap(file, adr, argc * sizeof(unsigned long));
+	mem = memmap(file, adr, argc * width);
 	if (!mem)
 		return 1;
 
