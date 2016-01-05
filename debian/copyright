@@ -2,12 +2,12 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-name: memtool
 Upstream-Contact: entwicklung@pengutronix.de
 
-Files: debian/*
-Copyright: (C) 2015, Uwe Kleine-König <ukleinek@debian.org>
-License: GPL-2
-
 Files: *
 Copyright: (C) 2015 Pengutronix, Sascha Hauer <entwicklung@pengutronix.de>
+License: GPL-2
+
+Files: debian/*
+Copyright: (C) 2015, Uwe Kleine-König <ukleinek@debian.org>
 License: GPL-2
 
 License: GPL-2
