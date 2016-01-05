@@ -215,7 +215,7 @@ static void *memmap(const char *file, off_t addr, size_t size)
 	mmap_start = addr & ~((off_t)pagesize - 1);
 	ofs = addr - mmap_start;
 
-	mem = mmap(0, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
+	mem = mmap(NULL, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
 		   memfd, mmap_start);
 	if (mem == MAP_FAILED) {
 		perror("mmap");
