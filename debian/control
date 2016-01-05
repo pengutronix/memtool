@@ -10,7 +10,7 @@ Vcs-Browser: http://git.pengutronix.de/?p=tools/memtool.git
 Vcs-Git: git://git.pengutronix.de/git/tools/memtool.git -b debian/unstable
 
 Package: memtool
-Architecture: linux-any
+Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Development tool to modify memory mapped registers
  memtool allows one to read and write memory mapped registers via /dev/mem. The
