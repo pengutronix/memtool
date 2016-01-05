@@ -1,9 +1,9 @@
-memtool (2016.01.0-1) UNRELEASED; urgency=medium
+memtool (2016.01.0-1) unstable; urgency=medium
 
   * New upstream release which fixes LFS issues.
   * Build also on non-linux platforms.
 
- -- Uwe Kleine-König <ukleinek@debian.org>  Tue, 05 Jan 2016 23:22:10 +0100
+ -- Uwe Kleine-König <ukleinek@debian.org>  Wed, 06 Jan 2016 00:04:33 +0100
 
 memtool (2015.12.2-1) unstable; urgency=medium
 
