@@ -70,11 +70,10 @@ static unsigned long long strtoull_suffix(const char *str, char **endp, int base
  * 0x1000        -> start = 0x1000, size = ~0
  * 1M+1k         -> start = 0x100000, size = 0x400
  */
-static int parse_area_spec(const char *str, unsigned long long *start,
-		    unsigned long long *size)
+static int parse_area_spec(const char *str, off_t *start, size_t *size)
 {
 	char *endp;
-	loff_t end;
+	off_t end;
 
 	if (!isdigit(*str))
 		return -1;
@@ -128,10 +127,10 @@ static int parse_area_spec(const char *str, unsigned long long *start,
 	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
 	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
-static int memory_display(const void *addr, unsigned long long offs,
-		   unsigned nbytes, int size, int swab)
+static int memory_display(const void *addr, off_t offs,
+			  size_t nbytes, int width, int swab)
 {
-	ulong linebytes, i;
+	size_t linebytes, i;
 	u_char	*cp;
 
 	/* Print the lines.
@@ -147,23 +146,23 @@ static int memory_display(const void *addr, unsigned long long offs,
 		uint8_t *ucp = (uint8_t *)linebuf;
 		unsigned count = 52;
 
-		printf("%08llx:", offs);
+		printf("%08llx:", (unsigned long long)offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
-		for (i = 0; i < linebytes; i += size) {
-			if (size == 8) {
+		for (i = 0; i < linebytes; i += width) {
+			if (width == 8) {
 				uint64_t res;
 				res = (*uqp++ = *((uint64_t *)addr));
 				if (swab)
 					res = swab64(res);
 				count -= printf(" %016" PRIx64, res);
-			} else if (size == 4) {
+			} else if (width == 4) {
 				uint32_t res;
 				res = (*uip++ = *((uint *)addr));
 				if (swab)
 					res = swab32(res);
 				count -= printf(" %08" PRIx32, res);
-			} else if (size == 2) {
+			} else if (width == 2) {
 				uint16_t res;
 				res = (*usp++ = *((ushort *)addr));
 				if (swab)
@@ -172,8 +171,8 @@ static int memory_display(const void *addr, unsigned long long offs,
 			} else {
 				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
 			}
-			addr += size;
-			offs += size;
+			addr += width;
+			offs += width;
 		}
 
 		while (count--)
@@ -197,10 +196,15 @@ static int memory_display(const void *addr, unsigned long long offs,
 
 static int memfd;
 
-static void *memmap(const char *file, unsigned long addr, unsigned long size)
+static void *memmap(const char *file, off_t addr, size_t size)
 {
-	unsigned long mmap_start, ofs;
+	off_t mmap_start;
+	size_t ofs;
 	void *mem;
+	long pagesize = sysconf(_SC_PAGE_SIZE);
+
+	if (pagesize < 0)
+		pagesize = 4096;
 
 	memfd = open(file, O_RDWR);
 	if (memfd < 0) {
@@ -208,7 +212,7 @@ static void *memmap(const char *file, unsigned long addr, unsigned long size)
 		exit(1);
 	}
 
-	mmap_start = addr & ~(4095);
+	mmap_start = addr & ~((off_t)pagesize - 1);
 	ofs = addr - mmap_start;
 
 	mem = mmap(0, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
@@ -254,7 +258,8 @@ static int cmd_memory_display(int argc, char **argv)
 {
 	int opt;
 	int width = 4;
-	unsigned long long size = 0x100, start = 0x0;
+	size_t size = 0x100;
+	off_t start = 0x0;
 	void *mem;
 	char *file = "/dev/mem";
 	int swap = 0;
@@ -323,7 +328,7 @@ static void usage_mw(void)
 
 static int cmd_memory_write(int argc, char *argv[])
 {
-	unsigned long long adr;
+	off_t adr;
 	int width = 4;
 	int opt;
 	void *mem;
@@ -357,7 +362,7 @@ static int cmd_memory_write(int argc, char *argv[])
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	mem = memmap(file, adr, argc * sizeof(unsigned long));
+	mem = memmap(file, adr, argc * width);
 	if (!mem)
 		return 1;
 
