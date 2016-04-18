@@ -1,11 +1,12 @@
-memtool (2016.01.0-2) UNRELEASED; urgency=medium
+memtool (2016.01.0-2) unstable; urgency=medium
 
+  Make lintian happy:
   * Fix order of paragraphs in d/copyright to please lintian (and
     correctness).
   * Check signatures in d/watch to please lintian even more.
   * Enable all hardening features.
 
- -- Uwe Kleine-König <ukleinek@debian.org>  Wed, 06 Jan 2016 00:18:30 +0100
+ -- Uwe Kleine-König <ukleinek@debian.org>  Mon, 18 Apr 2016 21:50:27 +0200
 
 memtool (2016.01.0-1) unstable; urgency=medium
 
