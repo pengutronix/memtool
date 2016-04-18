@@ -2,6 +2,7 @@ memtool (2016.01.0-2) UNRELEASED; urgency=medium
 
   * Fix order of paragraphs in d/copyright to please lintian (and
     correctness).
+  * Check signatures in d/watch to please lintian even more.
 
  -- Uwe Kleine-König <ukleinek@debian.org>  Wed, 06 Jan 2016 00:18:30 +0100
 
