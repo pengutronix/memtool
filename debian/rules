@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 binary-indep binary-arch binary build-arch build-indep build clean install:
 	dh $@
 
