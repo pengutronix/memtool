@@ -196,7 +196,7 @@ static int memory_display(const void *addr, off_t offs,
 
 static int memfd;
 
-static void *memmap(const char *file, off_t addr, size_t size)
+static void *memmap(const char *file, off_t addr, size_t size, int readonly)
 {
 	off_t mmap_start;
 	size_t ofs;
@@ -206,7 +206,7 @@ static void *memmap(const char *file, off_t addr, size_t size)
 	if (pagesize < 0)
 		pagesize = 4096;
 
-	memfd = open(file, O_RDWR);
+	memfd = open(file, readonly ? O_RDONLY : O_RDWR);
 	if (memfd < 0) {
 		perror("open");
 		exit(1);
@@ -215,8 +215,8 @@ static void *memmap(const char *file, off_t addr, size_t size)
 	mmap_start = addr & ~((off_t)pagesize - 1);
 	ofs = addr - mmap_start;
 
-	mem = mmap(NULL, size + ofs, PROT_READ | PROT_WRITE, MAP_SHARED,
-		   memfd, mmap_start);
+	mem = mmap(NULL, size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
+		   MAP_SHARED, memfd, mmap_start);
 	if (mem == MAP_FAILED) {
 		perror("mmap");
 		goto out;
@@ -299,7 +299,7 @@ static int cmd_memory_display(int argc, char **argv)
 			size = 0x100;
 	}
 
-	mem = memmap(file, start, size);
+	mem = memmap(file, start, size, 1);
 
 	memory_display(mem, start, size, width, swap);
 
@@ -362,7 +362,7 @@ static int cmd_memory_write(int argc, char *argv[])
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	mem = memmap(file, adr, argc * width);
+	mem = memmap(file, adr, argc * width, 0);
 	if (!mem)
 		return 1;
 
