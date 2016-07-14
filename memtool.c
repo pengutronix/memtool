@@ -92,7 +92,7 @@ static int parse_area_spec(const char *str, off_t *start, size_t *size)
 		/* beginning and end given */
 		end = strtoull_suffix(str + 1, NULL, 0);
 		if (end < *start) {
-			printf("end < start\n");
+			fprintf(stderr, "end < start\n");
 			return -1;
 		}
 		*size = end - *start + 1;
@@ -292,7 +292,7 @@ static int cmd_memory_display(int argc, char **argv)
 
 	if (optind < argc) {
 		if (parse_area_spec(argv[optind], &start, &size)) {
-			printf("could not parse: %s\n", argv[optind]);
+			fprintf(stderr, "could not parse: %s\n", argv[optind]);
 			return EXIT_FAILURE;
 		}
 		if (size == ~0)
