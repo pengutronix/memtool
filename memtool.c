@@ -360,7 +360,7 @@ static int cmd_memory_write(int argc, char *argv[])
 	}
 
 	if (optind + 1 >= argc) {
-		fprintf(stderr, "To few parameters for mw\n");
+		fprintf(stderr, "Too few parameters for mw\n");
 		return EXIT_FAILURE;
 	}
 
