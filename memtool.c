@@ -209,7 +209,7 @@ static void *memmap(const char *file, off_t addr, size_t size, int readonly)
 	memfd = open(file, readonly ? O_RDONLY : O_RDWR);
 	if (memfd < 0) {
 		perror("open");
-		exit(1);
+		return NULL;
 	}
 
 	mmap_start = addr & ~((off_t)pagesize - 1);
@@ -293,19 +293,21 @@ static int cmd_memory_display(int argc, char **argv)
 	if (optind < argc) {
 		if (parse_area_spec(argv[optind], &start, &size)) {
 			printf("could not parse: %s\n", argv[optind]);
-			return 1;
+			return EXIT_FAILURE;
 		}
 		if (size == ~0)
 			size = 0x100;
 	}
 
 	mem = memmap(file, start, size, 1);
+	if (!mem)
+		return EXIT_FAILURE;
 
 	memory_display(mem, start, size, width, swap);
 
 	close(memfd);
 
-	exit(1);
+	return EXIT_SUCCESS;
 }
 
 static void usage_mw(void)
@@ -357,14 +359,16 @@ static int cmd_memory_write(int argc, char *argv[])
 		}
 	}
 
-	if (optind + 1 >= argc)
-		return 1;
+	if (optind + 1 >= argc) {
+		fprintf(stderr, "To few parameters for mw\n");
+		return EXIT_FAILURE;
+	}
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
 	mem = memmap(file, adr, argc * width, 0);
 	if (!mem)
-		return 1;
+		return EXIT_FAILURE;
 
 	while (optind < argc) {
 		uint8_t val8;
@@ -460,5 +464,5 @@ int main(int argc, char **argv)
 
 	usage();
 
-	exit(1);
+	return EXIT_FAILURE;
 }
