@@ -1,3 +1,9 @@
+memtool (2016.07.0-1) unstable; urgency=medium
+
+  * New upstream release fixing memtool md on read-only files.
+
+ -- Uwe Kleine-König <ukleinek@debian.org>  Thu, 14 Jul 2016 09:27:32 +0200
+
 memtool (2016.01.0-2) unstable; urgency=medium
 
   Make lintian happy:
