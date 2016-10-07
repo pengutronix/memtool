@@ -196,12 +196,14 @@ static int memory_display(const void *addr, off_t offs,
 
 static int memfd;
 
-static void *memmap(const char *file, off_t addr, size_t size, int readonly)
+static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
 {
 	off_t mmap_start;
 	size_t ofs;
 	void *mem;
 	long pagesize = sysconf(_SC_PAGE_SIZE);
+	struct stat s;
+	int ret;
 
 	if (pagesize < 0)
 		pagesize = 4096;
@@ -212,10 +214,38 @@ static void *memmap(const char *file, off_t addr, size_t size, int readonly)
 		return NULL;
 	}
 
+	ret = fstat(memfd, &s);
+	if (ret) {
+		perror("fstat");
+		goto out;
+	}
+
+	if (S_ISREG(s.st_mode)) {
+		if (readonly) {
+			if (s.st_size <= addr) {
+				errno = EINVAL;
+				perror("File to small");
+				goto out;
+			}
+
+			if (s.st_size < addr + *size)
+				/* truncating */
+				*size = s.st_size - addr;
+
+		} else {
+			int ret = posix_fallocate(memfd, addr, *size);
+			if (ret) {
+				errno = ret;
+				perror("Failed to fallocate");
+				goto out;
+			}
+		}
+	}
+
 	mmap_start = addr & ~((off_t)pagesize - 1);
 	ofs = addr - mmap_start;
 
-	mem = mmap(NULL, size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
+	mem = mmap(NULL, *size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
 		   MAP_SHARED, memfd, mmap_start);
 	if (mem == MAP_FAILED) {
 		perror("mmap");
@@ -299,7 +329,7 @@ static int cmd_memory_display(int argc, char **argv)
 			size = 0x100;
 	}
 
-	mem = memmap(file, start, size, 1);
+	mem = memmap(file, start, &size, 1);
 	if (!mem)
 		return EXIT_FAILURE;
 
@@ -331,6 +361,7 @@ static void usage_mw(void)
 static int cmd_memory_write(int argc, char *argv[])
 {
 	off_t adr;
+	size_t size;
 	int width = 4;
 	int opt;
 	void *mem;
@@ -366,7 +397,8 @@ static int cmd_memory_write(int argc, char *argv[])
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	mem = memmap(file, adr, argc * width, 0);
+	size = (argc - optind) * width;
+	mem = memmap(file, adr, &size, 0);
 	if (!mem)
 		return EXIT_FAILURE;
 
