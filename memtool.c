@@ -208,7 +208,8 @@ static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
 	if (pagesize < 0)
 		pagesize = 4096;
 
-	memfd = open(file, readonly ? O_RDONLY : O_RDWR);
+	memfd = open(file, readonly ? O_RDONLY : (O_RDWR | O_CREAT),
+		     S_IRUSR | S_IWUSR);
 	if (memfd < 0) {
 		perror("open");
 		return NULL;
