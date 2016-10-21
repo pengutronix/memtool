@@ -92,7 +92,7 @@ static int parse_area_spec(const char *str, off_t *start, size_t *size)
 		/* beginning and end given */
 		end = strtoull_suffix(str + 1, NULL, 0);
 		if (end < *start) {
-			printf("end < start\n");
+			fprintf(stderr, "end < start\n");
 			return -1;
 		}
 		*size = end - *start + 1;
@@ -196,26 +196,57 @@ static int memory_display(const void *addr, off_t offs,
 
 static int memfd;
 
-static void *memmap(const char *file, off_t addr, size_t size, int readonly)
+static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
 {
 	off_t mmap_start;
 	size_t ofs;
 	void *mem;
 	long pagesize = sysconf(_SC_PAGE_SIZE);
+	struct stat s;
+	int ret;
 
 	if (pagesize < 0)
 		pagesize = 4096;
 
-	memfd = open(file, readonly ? O_RDONLY : O_RDWR);
+	memfd = open(file, readonly ? O_RDONLY : (O_RDWR | O_CREAT),
+		     S_IRUSR | S_IWUSR);
 	if (memfd < 0) {
 		perror("open");
-		exit(1);
+		return NULL;
+	}
+
+	ret = fstat(memfd, &s);
+	if (ret) {
+		perror("fstat");
+		goto out;
+	}
+
+	if (S_ISREG(s.st_mode)) {
+		if (readonly) {
+			if (s.st_size <= addr) {
+				errno = EINVAL;
+				perror("File to small");
+				goto out;
+			}
+
+			if (s.st_size < addr + *size)
+				/* truncating */
+				*size = s.st_size - addr;
+
+		} else {
+			int ret = posix_fallocate(memfd, addr, *size);
+			if (ret) {
+				errno = ret;
+				perror("Failed to fallocate");
+				goto out;
+			}
+		}
 	}
 
 	mmap_start = addr & ~((off_t)pagesize - 1);
 	ofs = addr - mmap_start;
 
-	mem = mmap(NULL, size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
+	mem = mmap(NULL, *size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
 		   MAP_SHARED, memfd, mmap_start);
 	if (mem == MAP_FAILED) {
 		perror("mmap");
@@ -292,20 +323,22 @@ static int cmd_memory_display(int argc, char **argv)
 
 	if (optind < argc) {
 		if (parse_area_spec(argv[optind], &start, &size)) {
-			printf("could not parse: %s\n", argv[optind]);
-			return 1;
+			fprintf(stderr, "could not parse: %s\n", argv[optind]);
+			return EXIT_FAILURE;
 		}
 		if (size == ~0)
 			size = 0x100;
 	}
 
-	mem = memmap(file, start, size, 1);
+	mem = memmap(file, start, &size, 1);
+	if (!mem)
+		return EXIT_FAILURE;
 
 	memory_display(mem, start, size, width, swap);
 
 	close(memfd);
 
-	exit(1);
+	return EXIT_SUCCESS;
 }
 
 static void usage_mw(void)
@@ -329,6 +362,7 @@ static void usage_mw(void)
 static int cmd_memory_write(int argc, char *argv[])
 {
 	off_t adr;
+	size_t size;
 	int width = 4;
 	int opt;
 	void *mem;
@@ -357,14 +391,17 @@ static int cmd_memory_write(int argc, char *argv[])
 		}
 	}
 
-	if (optind + 1 >= argc)
-		return 1;
+	if (optind + 1 >= argc) {
+		fprintf(stderr, "Too few parameters for mw\n");
+		return EXIT_FAILURE;
+	}
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	mem = memmap(file, adr, argc * width, 0);
+	size = (argc - optind) * width;
+	mem = memmap(file, adr, &size, 0);
 	if (!mem)
-		return 1;
+		return EXIT_FAILURE;
 
 	while (optind < argc) {
 		uint8_t val8;
@@ -460,5 +497,5 @@ int main(int argc, char **argv)
 
 	usage();
 
-	exit(1);
+	return EXIT_FAILURE;
 }
