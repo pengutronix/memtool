@@ -1,9 +1,9 @@
-memtool (2016.10.0-1) UNRELEASED; urgency=medium
+memtool (2016.10.0-1) unstable; urgency=medium
 
   * New upstream release fixing handling of small files (Closes: #831219).
   * Standards-Version: 3.9.8 (no changes needed)
 
- -- Uwe Kleine-König <ukleinek@debian.org>  Fri, 21 Oct 2016 20:55:47 +0200
+ -- Uwe Kleine-König <ukleinek@debian.org>  Fri, 21 Oct 2016 21:16:03 +0200
 
 memtool (2016.07.0-1) unstable; urgency=medium
 
