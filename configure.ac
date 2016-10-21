@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([memtool], [2016.07.0], [entwicklung@pengutronix.de])
+AC_INIT([memtool], [2016.10.0], [entwicklung@pengutronix.de])
 AC_CONFIG_SRCDIR([memtool.c])
 AM_INIT_AUTOMAKE([foreign dist-xz])
 
