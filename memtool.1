@@ -2,6 +2,8 @@
 .SH NAME
 memtool \- display and modify memory
 .SH SYNOPSIS
+.B memtool -V
+.br
 .B memtool md
 .RB [\| \-b \||\| \-w \||\| \-l \||\| \-q \|]
 .RB [\| \-x \|]
@@ -34,6 +36,11 @@ This might result in all kind of errors which are not considered to be a bug of
 the tool, but either the machine or the caller.
 
 .SH OPTIONS
+.TP
+.B \-V
+Dump memtool version and exit
+
+.SH COMMON OPTIONS FOR SUBCOMMANDS
 .TP
 .B \-b
 Use byte wise (8-bit) access

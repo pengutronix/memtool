@@ -479,6 +479,11 @@ int main(int argc, char **argv)
 	if (!strcmp(basename(argv[0]), "memtool")) {
 		argv++;
 		argc--;
+
+		if (!strcmp(argv[0], "-V")) {
+			printf("%s\n", PACKAGE_STRING);
+			return EXIT_SUCCESS;
+		}
 	}
 
 	if (argc < 1) {
