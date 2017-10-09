@@ -233,7 +233,7 @@ static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
 				/* truncating */
 				*size = s.st_size - addr;
 
-		} else {
+		} else if (s.st_size < addr + *size) {
 			int ret = posix_fallocate(memfd, addr, *size);
 			if (ret) {
 				errno = ret;
