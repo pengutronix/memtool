@@ -2,7 +2,7 @@ Source: memtool
 Section: devel
 Priority: optional
 Maintainer: Uwe Kleine-König <ukleinek@debian.org>
-Standards-Version: 3.9.8
+Standards-Version: 4.1.2
 Homepage: http://www.pengutronix.de/software/memtool/index_en.html
 Build-Depends: debhelper (>= 9), autoconf, automake
 Build-Conflicts: autoconf2.13, automake1.4
