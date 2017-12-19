@@ -1,6 +1,6 @@
 Source: memtool
 Section: devel
-Priority: extra
+Priority: optional
 Maintainer: Uwe Kleine-König <ukleinek@debian.org>
 Standards-Version: 3.9.8
 Homepage: http://www.pengutronix.de/software/memtool/index_en.html
