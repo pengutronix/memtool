@@ -233,7 +233,7 @@ static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
 				/* truncating */
 				*size = s.st_size - addr;
 
-		} else {
+		} else if (s.st_size < addr + *size) {
 			int ret = posix_fallocate(memfd, addr, *size);
 			if (ret) {
 				errno = ret;
@@ -479,6 +479,11 @@ int main(int argc, char **argv)
 	if (!strcmp(basename(argv[0]), "memtool")) {
 		argv++;
 		argc--;
+
+		if (!strcmp(argv[0], "-V")) {
+			printf("%s\n", PACKAGE_STRING);
+			return EXIT_SUCCESS;
+		}
 	}
 
 	if (argc < 1) {
