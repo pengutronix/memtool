@@ -3,9 +3,10 @@ Development Tree
 
 memtool uses git for version control. The master repository is available at
 
-	git://git.pengutronix.de/git/tools/memtool.git
+	https://github.com/pengutronix/memtool
 
-. Patches can be sent to entwicklung@pengutronix.de.
+. To submit patches you can use the github stuff, alternatively patches can be
+sent to oss-tools@pengutronix.de.
 
 Build Guideline
 ---------------
