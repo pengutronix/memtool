@@ -2,7 +2,8 @@ EXTRA_DIST = README.devel
 
 bin_PROGRAMS = memtool
 
-memtool_SOURCES = memtool.c
+noinst_HEADERS = fileaccess.h fileaccpriv.h
+memtool_SOURCES = memtool.c fileaccess.c acc_mmap.c
 
 dist_man_MANS = memtool.1
 
