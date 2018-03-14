@@ -30,7 +30,7 @@
 
 /*
  * Like strtoull() but handles an optional G, M, K or k
- * suffix for Gigabyte, Megabyte or Kilobyte
+ * suffix for Gibibyte, Mibibyte or Kibibyte.
  */
 static unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 {
