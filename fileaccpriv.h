@@ -20,4 +20,5 @@ struct memtool_fd {
 	int (*close)(struct memtool_fd *handle);
 };
 
+struct memtool_fd *mdio_open(const char *spec, int flags);
 struct memtool_fd *mmap_open(const char *spec, int flags);

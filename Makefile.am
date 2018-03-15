@@ -4,6 +4,9 @@ bin_PROGRAMS = memtool
 
 noinst_HEADERS = fileaccess.h fileaccpriv.h
 memtool_SOURCES = memtool.c fileaccess.c acc_mmap.c
+if MDIO
+memtool_SOURCES += acc_mdio.c
+endif
 
 dist_man_MANS = memtool.1
 

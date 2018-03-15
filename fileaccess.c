@@ -11,12 +11,26 @@
  * GNU General Public License for more details.
  */
 
+#include <string.h>
+#include <stdio.h>
+
 #include "fileaccess.h"
 #include "fileaccpriv.h"
 
 void *memtool_open(const char *spec, int flags)
 {
-	return mmap_open(spec, flags);
+	if (!strncmp(spec, "mmap:", 5)) {
+		return mmap_open(spec + 5, flags);
+	} else if (!strncmp(spec, "mdio:", 5)) {
+#ifdef USE_MDIO
+		return mdio_open(spec + 5, flags);
+#else
+		fprintf(stderr, "mdio support not compiled in\n");
+		return NULL;
+#endif
+	} else {
+		return mmap_open(spec, flags);
+	}
 }
 
 ssize_t memtool_read(void *handle,
