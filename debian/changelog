@@ -5,6 +5,7 @@ memtool (2018.03.0-1) UNRELEASED; urgency=medium
   * Standards-Version: 4.1.2 (no further changes needed)
   * New upstream release
     - Support to access network phys
+  * Build using debhelper 11
 
  -- Uwe Kleine-König <ukleinek@debian.org>  Tue, 19 Dec 2017 09:20:57 +0100
 

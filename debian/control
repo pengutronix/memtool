@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Uwe Kleine-König <ukleinek@debian.org>
 Standards-Version: 4.1.2
 Homepage: http://www.pengutronix.de/software/memtool/index_en.html
-Build-Depends: debhelper (>= 9), autoconf, automake
+Build-Depends: debhelper (>= 11), autoconf, automake
 Build-Conflicts: autoconf2.13, automake1.4
 Vcs-Browser: http://git.pengutronix.de/?p=tools/memtool.git
 Vcs-Git: git://git.pengutronix.de/git/tools/memtool.git -b debian/unstable
