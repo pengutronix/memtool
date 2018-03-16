@@ -480,7 +480,7 @@ int main(int argc, char **argv)
 		argv++;
 		argc--;
 
-		if (!strcmp(argv[0], "-V")) {
+		if (argc > 0 && !strcmp(argv[0], "-V")) {
 			printf("%s\n", PACKAGE_STRING);
 			return EXIT_SUCCESS;
 		}
