@@ -1,9 +1,10 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-name: memtool
-Upstream-Contact: entwicklung@pengutronix.de
+Upstream-Contact: oss-tools@pengutronix.de
 
 Files: *
 Copyright: (C) 2015 Pengutronix, Sascha Hauer <entwicklung@pengutronix.de>
+           (C) 2018 Pengutronix, Uwe Kleine-König <oss-tools@pengutronix.de>
 License: GPL-2
 
 Files: debian/*
