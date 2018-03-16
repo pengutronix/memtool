@@ -1,6 +1,10 @@
 language: c
 compiler: gcc
 dist: trusty
+addons:
+  apt:
+    packages:
+      - linux-libc-dev
 script:
   - autoreconf -fi
   - ./configure
