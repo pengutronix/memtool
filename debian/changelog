@@ -1,4 +1,4 @@
-memtool (2018.03.0-1) UNRELEASED; urgency=medium
+memtool (2018.03.0-1) unstable; urgency=medium
 
   * Switch to Priority: optional.
   * Use https in the copyright-format URL.
@@ -7,7 +7,7 @@ memtool (2018.03.0-1) UNRELEASED; urgency=medium
     - Support to access network phys
   * Build using debhelper 11
 
- -- Uwe Kleine-König <ukleinek@debian.org>  Tue, 19 Dec 2017 09:20:57 +0100
+ -- Uwe Kleine-König <ukleinek@debian.org>  Fri, 16 Mar 2018 12:19:04 +0100
 
 memtool (2016.10.0-1) unstable; urgency=medium
 
