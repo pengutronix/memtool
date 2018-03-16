@@ -29,6 +29,22 @@ to write to memory/a file; and
 .B md
 to read from memory/a file.
 
+Usually memtool operates on files (regular or devices) using mmap(2). If
+.I filename
+is of the form
+.RI mdio: ethname . id
+with
+.I ethname
+being the name of an ethernet device and
+.I id
+being an MDIO address, the phy with address
+.I id
+on the MDIO bus related to the ethernet device
+.I ethname
+is accessed instead. To prevent ambiguities when using the mmap access method, use
+.RI mmap: filename
+as parameter.
+
 Note that on some machines there are alignment restrictions that forbid for
 example to read a word from an address that is not word aligned. memtool
 doesn't try to be smart here but simply tries what is requested by the caller.
