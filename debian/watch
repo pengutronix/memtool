@@ -1,4 +1,4 @@
 version=4
 
-opts="pgpsigurlmangle=s%.xz$%.sig%, decompress" \
+opts=pgpmode=auto \
 http://www.pengutronix.de/software/memtool/downloads/memtool-(.*)\.tar\.xz
