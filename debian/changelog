@@ -1,8 +1,10 @@
-memtool (2016.10.0-2) UNRELEASED; urgency=medium
+memtool (2018.03.0-1) UNRELEASED; urgency=medium
 
   * Switch to Priority: optional.
   * Use https in the copyright-format URL.
   * Standards-Version: 4.1.2 (no further changes needed)
+  * New upstream release
+    - Support to access network phys
 
  -- Uwe Kleine-König <ukleinek@debian.org>  Tue, 19 Dec 2017 09:20:57 +0100
 
