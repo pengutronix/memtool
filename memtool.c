@@ -11,7 +11,9 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <libgen.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -26,11 +28,13 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "fileaccess.h"
+
 #define DISP_LINE_LEN	16
 
 /*
  * Like strtoull() but handles an optional G, M, K or k
- * suffix for Gigabyte, Megabyte or Kilobyte
+ * suffix for Gibibyte, Mibibyte or Kibibyte.
  */
 static unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 {
@@ -194,72 +198,6 @@ static int memory_display(const void *addr, off_t offs,
 	return 0;
 }
 
-static int memfd;
-
-static void *memmap(const char *file, off_t addr, size_t *size, int readonly)
-{
-	off_t mmap_start;
-	size_t ofs;
-	void *mem;
-	long pagesize = sysconf(_SC_PAGE_SIZE);
-	struct stat s;
-	int ret;
-
-	if (pagesize < 0)
-		pagesize = 4096;
-
-	memfd = open(file, readonly ? O_RDONLY : (O_RDWR | O_CREAT),
-		     S_IRUSR | S_IWUSR);
-	if (memfd < 0) {
-		perror("open");
-		return NULL;
-	}
-
-	ret = fstat(memfd, &s);
-	if (ret) {
-		perror("fstat");
-		goto out;
-	}
-
-	if (S_ISREG(s.st_mode)) {
-		if (readonly) {
-			if (s.st_size <= addr) {
-				errno = EINVAL;
-				perror("File to small");
-				goto out;
-			}
-
-			if (s.st_size < addr + *size)
-				/* truncating */
-				*size = s.st_size - addr;
-
-		} else {
-			int ret = posix_fallocate(memfd, addr, *size);
-			if (ret) {
-				errno = ret;
-				perror("Failed to fallocate");
-				goto out;
-			}
-		}
-	}
-
-	mmap_start = addr & ~((off_t)pagesize - 1);
-	ofs = addr - mmap_start;
-
-	mem = mmap(NULL, *size + ofs, PROT_READ | (readonly ? 0 : PROT_WRITE),
-		   MAP_SHARED, memfd, mmap_start);
-	if (mem == MAP_FAILED) {
-		perror("mmap");
-		goto out;
-	}
-
-	return mem + ofs;
-out:
-	close(memfd);
-
-	return NULL;
-}
-
 static void usage_md(void)
 {
 	printf(
@@ -289,9 +227,10 @@ static int cmd_memory_display(int argc, char **argv)
 {
 	int opt;
 	int width = 4;
-	size_t size = 0x100;
+	size_t bufsize, size = 0x100;
+	char *buf;
+	void *handle;
 	off_t start = 0x0;
-	void *mem;
 	char *file = "/dev/mem";
 	int swap = 0;
 
@@ -330,13 +269,47 @@ static int cmd_memory_display(int argc, char **argv)
 			size = 0x100;
 	}
 
-	mem = memmap(file, start, &size, 1);
-	if (!mem)
+	if (size & (width - 1)) {
+		size &= ~(width - 1);
+		fprintf(stderr, "warning: skipping truncated read, size=%zu\n",
+			size);
+	}
+
+	if (!size)
+		return EXIT_SUCCESS;
+
+	bufsize = size;
+	if (bufsize > 4096)
+		bufsize = 4096;
+
+	buf = malloc(bufsize);
+	if (!buf) {
+		fprintf(stderr, "could not allocate memory\n");
+		return EXIT_FAILURE;
+	}
+
+	handle = memtool_open(file, O_RDONLY);
+	if (!handle)
 		return EXIT_FAILURE;
 
-	memory_display(mem, start, size, width, swap);
+	while (size) {
+		int ret;
 
-	close(memfd);
+		if (size < bufsize)
+			bufsize = size;
+
+		ret = memtool_read(handle, start, buf, bufsize, width);
+		if (ret < 0)
+			return EXIT_FAILURE;
+
+		assert(ret == bufsize);
+		memory_display(buf, start, bufsize, width, swap);
+
+		start += bufsize;
+		size -= bufsize;
+	}
+
+	memtool_close(handle);
 
 	return EXIT_SUCCESS;
 }
@@ -362,10 +335,12 @@ static void usage_mw(void)
 static int cmd_memory_write(int argc, char *argv[])
 {
 	off_t adr;
-	size_t size;
+	size_t bufsize, size;
+	char *buf;
+	void *handle;
 	int width = 4;
 	int opt;
-	void *mem;
+	int i, ret;
 	char *file = "/dev/mem";
 
 	while ((opt = getopt(argc, argv, "bwlqd:h")) != -1) {
@@ -399,41 +374,62 @@ static int cmd_memory_write(int argc, char *argv[])
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
 	size = (argc - optind) * width;
-	mem = memmap(file, adr, &size, 0);
-	if (!mem)
+	if (!size)
+		return EXIT_SUCCESS;
+
+	bufsize = size;
+	if (bufsize > 4096)
+		bufsize = 4096;
+
+	buf = malloc(bufsize);
+	if (!buf) {
+		fprintf(stderr, "could not allocate memory\n");
+		return EXIT_FAILURE;
+	}
+
+	handle = memtool_open(file, O_RDWR | O_CREAT);
+	if (!handle)
 		return EXIT_FAILURE;
 
 	while (optind < argc) {
-		uint8_t val8;
-		uint16_t val16;
-		uint32_t val32;
-		uint64_t val64;
+		i = 0;
 
-		switch (width) {
-		case 1:
-			val8 = strtoul(argv[optind], NULL, 0);
-			*(volatile uint8_t *)mem = val8;
-			break;
-		case 2:
-			val16 = strtoul(argv[optind], NULL, 0);
-			*(volatile uint16_t *)mem = val16;
-			break;
-		case 4:
-			val32 = strtoul(argv[optind], NULL, 0);
-			*(volatile uint32_t *)mem = val32;
-			break;
-		case 8:
-			val64 = strtoull(argv[optind], NULL, 0);
-			*(volatile uint64_t *)mem = val64;
-			break;
+		while (optind < argc && i * width < bufsize) {
+			switch (width) {
+			case 1:
+				((uint8_t *)buf)[i] =
+					strtoull(argv[optind], NULL, 0);
+				break;
+			case 2:
+				((uint16_t *)buf)[i] =
+					strtoull(argv[optind], NULL, 0);
+				break;
+			case 4:
+				((uint32_t *)buf)[i] =
+					strtoull(argv[optind], NULL, 0);
+				break;
+			case 8:
+				((uint64_t *)buf)[i] =
+					strtoull(argv[optind], NULL, 0);
+				break;
+			}
+			++i;
+			++optind;
 		}
-		mem += width;
-		optind++;
+
+		ret = memtool_write(handle, adr, buf, i * width, width);
+		if (ret < 0)
+			break;
+
+		assert(ret == i * width);
+		adr += i * width;
 	}
 
-	close(memfd);
 
-	return 0;
+	memtool_close(handle);
+	free(buf);
+
+	return ret < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 struct cmd {
@@ -479,6 +475,11 @@ int main(int argc, char **argv)
 	if (!strcmp(basename(argv[0]), "memtool")) {
 		argv++;
 		argc--;
+
+		if (argc > 0 && !strcmp(argv[0], "-V")) {
+			printf("%s\n", PACKAGE_STRING);
+			return EXIT_SUCCESS;
+		}
 	}
 
 	if (argc < 1) {

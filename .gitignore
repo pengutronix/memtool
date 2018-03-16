@@ -1,3 +1,5 @@
+/acc_mdio.o
+/acc_mmap.o
 /aclocal.m4
 /autom4te.cache
 /compile
@@ -6,6 +8,7 @@
 /configure
 /depcomp
 /.deps
+/fileaccess.o
 /install-sh
 /Makefile
 /Makefile.in
