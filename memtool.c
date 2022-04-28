@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <ctype.h>
@@ -203,7 +204,7 @@ static void usage_md(void)
 	printf(
 "md - memory display\n"
 "\n"
-"Usage: md [-bwlqsx] REGION\n"
+"Usage: md [-bwlqsxr] REGION\n"
 "\n"
 "Display (hex dump) a memory region.\n"
 "\n"
@@ -212,6 +213,7 @@ static void usage_md(void)
 "  -w        word access (16 bit)\n"
 "  -l        long access (32 bit)\n"
 "  -q        quad access (64 bit)\n"
+"  -r        raw (binary) output\n"
 "  -s <FILE> display file (default /dev/mem)\n"
 "  -x        swap bytes at output\n"
 "\n"
@@ -233,8 +235,9 @@ static int cmd_memory_display(int argc, char **argv)
 	off_t start = 0x0;
 	char *file = "/dev/mem";
 	int swap = 0;
+	bool is_raw = false;
 
-	while ((opt = getopt(argc, argv, "bwlqs:xh")) != -1) {
+	while ((opt = getopt(argc, argv, "bwlqrs:xh")) != -1) {
 		switch (opt) {
 		case 'b':
 			width = 1;
@@ -247,6 +250,9 @@ static int cmd_memory_display(int argc, char **argv)
 			break;
 		case 'q':
 			width = 8;
+			break;
+		case 'r':
+			is_raw = true;
 			break;
 		case 's':
 			file = optarg;
@@ -303,7 +309,11 @@ static int cmd_memory_display(int argc, char **argv)
 			return EXIT_FAILURE;
 
 		assert(ret == bufsize);
-		memory_display(buf, start, bufsize, width, swap);
+
+                if (is_raw)
+			fwrite(buf, bufsize, 1, stdout);
+		else
+			memory_display(buf, start, bufsize, width, swap);
 
 		start += bufsize;
 		size -= bufsize;
